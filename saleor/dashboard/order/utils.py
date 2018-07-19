@@ -7,7 +7,7 @@ from ...core.utils.taxes import ZERO_MONEY
 from ...discount import VoucherType
 from ...discount.models import NotApplicable
 from ...discount.utils import (
-    get_product_or_category_voucher_discount, get_shipping_voucher_discount,
+    get_products_voucher_discount, get_shipping_voucher_discount,
     get_value_voucher_discount)
 from ...product.utils import decrease_stock
 
@@ -74,32 +74,25 @@ def update_order_with_user_addresses(order):
     order.save(update_fields=['billing_address', 'shipping_address'])
 
 
-def get_product_variants_and_prices(order, product):
+def get_prices_of_discounted_products(order):
     """Get variants and unit prices from order lines matching the product."""
-    lines = (
-        line for line in order
-        if line.variant and line.variant.product == product)
-    for line in lines:
-        for dummy_i in range(line.quantity):
-            variant = line.variant
-            if variant:
-                yield variant, variant.get_price()
+    discounted_products = order.voucher.products.all()
+    prices = [
+        line.get_total() for line in order
+        if line.variant and line.variant.product in discounted_products]
+    return prices
 
 
-def get_category_variants_and_prices(order, root_category):
-    """Get variants and unit prices from cart lines matching the category.
-
-    Product is assumed to be in the category if it belongs to any of its
-    descendant subcategories.
+def get_prices_of_products_in_discounted_collections(order):
+    """Get variants and unit prices from cart lines included in
+    the collections.
     """
-    products = {line.variant.product for line in order if line.variant}
-    matching_products = set()
-    for product in products:
-        if product.category.is_descendant_of(root_category, include_self=True):
-            matching_products.add(product)
-    for product in matching_products:
-        for line in get_product_variants_and_prices(order, product):
-            yield line
+    discounted_collections = set(order.voucher.collections.all())
+    prices = [
+        line.get_total() for line in order
+        if line.variant and
+        set(line.variant.product.collections.all()) & discounted_collections]
+    return prices
 
 
 def _get_value_voucher_discount_for_order(order):
@@ -122,19 +115,15 @@ def _get_shipping_voucher_discount_for_order(order):
     return discount_amount
 
 
-def _get_product_or_category_voucher_discount_for_order(order):
+def _get_products_voucher_discount_for_order(order):
     """Calculate discount value for a voucher of product or category type."""
     if order.voucher.type == VoucherType.PRODUCT:
-        prices = [
-            variant_price for _, variant_price in
-            get_product_variants_and_prices(order, order.voucher.product)]
+        prices = get_prices_of_discounted_products(order)
     else:
-        prices = [
-            variant_price for _, variant_price in
-            get_category_variants_and_prices(order, order.voucher.category)]
+        prices = get_prices_of_products_in_discounted_collections(order)
     if not prices:
         return ZERO_MONEY
-    return get_product_or_category_voucher_discount(order.voucher, prices)
+    return get_products_voucher_discount(order.voucher, prices)
 
 
 def get_voucher_discount_for_order(order):
@@ -149,7 +138,7 @@ def get_voucher_discount_for_order(order):
     if order.voucher.type == VoucherType.SHIPPING:
         return _get_shipping_voucher_discount_for_order(order)
     if order.voucher.type in (VoucherType.PRODUCT, VoucherType.CATEGORY):
-        return _get_product_or_category_voucher_discount_for_order(order)
+        return _get_products_voucher_discount_for_order(order)
     raise NotImplementedError('Unknown discount type')
 
 

@@ -166,8 +166,8 @@ def test_shipping_voucher_checkout_discount_not_applicable_returns_zero():
 def test_product_voucher_checkout_discount_not_applicable_returns_zero(
         monkeypatch):
     monkeypatch.setattr(
-        'saleor.dashboard.order.utils.get_product_variants_and_prices',
-        lambda order, product: [])
+        'saleor.dashboard.order.utils.get_prices_of_discounted_products',
+        lambda order: [])
     voucher = Voucher(
         code='unique', type=VoucherType.PRODUCT,
         discount_value_type=DiscountValueType.FIXED,

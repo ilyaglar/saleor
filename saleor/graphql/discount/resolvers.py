@@ -3,7 +3,7 @@ from ..utils import filter_by_query_param
 
 VOUCHER_SEARCH_FIELDS = (
     'name', 'code', 'discount_value', 'collections__name', 'products__name',
-    'categories__name', 'limit', 'countries', 'discount_value_type')
+    'limit', 'countries', 'discount_value_type')
 
 SALE_SEARCH_FIELDS = ('name', 'value', 'type')
 

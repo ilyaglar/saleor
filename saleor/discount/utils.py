@@ -76,14 +76,7 @@ def get_shipping_voucher_discount(voucher, total_price, shipping_price):
     return voucher.get_discount_amount_for(shipping_price)
 
 
-def get_product_or_category_voucher_discount(voucher, prices):
+def get_products_voucher_discount(voucher, prices):
     """Calculate discount value for a voucher of product or category type."""
-    #FIXME Here we should deduct total order amount by X or take X off each product
-    # if voucher.apply_to == VoucherApplyToProduct.VALUE:
-    #     discounts = (
-    #         voucher.get_discount_amount_for(price) for price in prices)
-    #     total_amount = sum(discounts, ZERO_MONEY)
-    #     return total_amount
-    # product_total = sum(prices, ZERO_TAXED_MONEY)
-    # return voucher.get_discount_amount_for(product_total)
-    return
+    product_total = sum(prices, ZERO_TAXED_MONEY)
+    return voucher.get_discount_amount_for(product_total)

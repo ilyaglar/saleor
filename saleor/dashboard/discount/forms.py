@@ -70,9 +70,7 @@ class VoucherForm(forms.ModelForm):
 
     class Meta:
         model = Voucher
-        exclude = [
-            'limit', 'countries', 'products', 'categories',
-            'collections', 'used']
+        exclude = ['limit', 'countries', 'products', 'collections', 'used']
         labels = {
             'type': pgettext_lazy(
                 'Discount type',
@@ -144,7 +142,6 @@ class ShippingVoucherForm(forms.ModelForm):
         fields = ['countries', 'limit']
 
     def save(self, commit=True):
-        self.instance.categories = None
         self.instance.products = None
         self.instance.collections = None
         return super().save(commit)
@@ -189,21 +186,6 @@ class ProductVoucherForm(CommonVoucherForm):
     class Meta:
         model = Voucher
         fields = ['products']
-
-
-class CategoryVoucherForm(CommonVoucherForm):
-
-    class Meta:
-        model = Voucher
-        fields = ['categories']
-        labels = {
-            'categories': pgettext_lazy(
-                'Categories',
-                'Categories')}
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields['categories'].required = True
 
 
 class CollectionVoucherForm(CommonVoucherForm):

@@ -21,7 +21,7 @@ from ..core.utils.taxes import ZERO_MONEY, get_taxes_for_country
 from ..discount import VoucherType
 from ..discount.models import NotApplicable, Voucher
 from ..discount.utils import (
-    get_product_or_category_voucher_discount, get_shipping_voucher_discount,
+    get_products_voucher_discount, get_shipping_voucher_discount,
     get_value_voucher_discount, increase_voucher_usage)
 from ..order.models import Order
 from ..shipping.models import ShippingMethodCountry
@@ -76,11 +76,12 @@ def remove_unavailable_variants(cart):
 
 def get_product_variants_and_prices(cart, products):
     """Get variants and unit prices from cart lines matching the product."""
-    #FIXME make it work with several products
-    lines = (line for line in cart if line.variant.product_id == products[0].id)
-    for line in lines:
-        for dummy_i in range(line.quantity):
-            yield line.variant, line.variant.get_price()
+    product_ids = [p.id for p in products]
+    prices = (
+        line.get_total()
+        for line in cart
+        if line.variant.product_id in product_ids)
+    return prices
 
 
 def get_category_variants_and_prices(cart, root_category):
@@ -645,10 +646,10 @@ def _get_shipping_voucher_discount_for_cart(voucher, cart):
 
 def _get_product_or_category_voucher_discount_for_cart(voucher, cart):
     """Calculate discount value for a voucher of product or category type."""
+    #FIXME Cos tu jest nie tak // no co ty nie powiesz
     if voucher.type == VoucherType.PRODUCT:
-        prices = [
-            variant_price for _, variant_price in
-            get_product_variants_and_prices(cart, voucher.products.all())]
+        prices = get_product_variants_and_prices(
+            cart, voucher.products.all())
     else:
         prices = [
             variant_price for _, variant_price in
@@ -658,7 +659,7 @@ def _get_product_or_category_voucher_discount_for_cart(voucher, cart):
             'Voucher not applicable',
             'This offer is only valid for selected items.')
         raise NotApplicable(msg)
-    return get_product_or_category_voucher_discount(voucher, prices)
+    return get_products_voucher_discount(voucher, prices)
 
 
 def get_voucher_discount_for_cart(voucher, cart):
@@ -670,7 +671,10 @@ def get_voucher_discount_for_cart(voucher, cart):
         return _get_value_voucher_discount_for_cart(voucher, cart)
     if voucher.type == VoucherType.SHIPPING:
         return _get_shipping_voucher_discount_for_cart(voucher, cart)
-    if voucher.type in (VoucherType.PRODUCT, VoucherType.CATEGORY):
+    if voucher.type == VoucherType.PRODUCT:
+        return _get_product_or_category_voucher_discount_for_cart(
+            voucher, cart)
+    if voucher.type == VoucherType.CATEGORY:
         return _get_product_or_category_voucher_discount_for_cart(
             voucher, cart)
     raise NotImplementedError('Unknown discount type')

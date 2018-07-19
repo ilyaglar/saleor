@@ -10,7 +10,7 @@ from saleor.discount import (
 from saleor.discount.models import NotApplicable, Sale, Voucher
 from saleor.discount.utils import (
     decrease_voucher_usage, get_product_discount_on_sale,
-    get_product_or_category_voucher_discount, get_shipping_voucher_discount,
+    get_products_voucher_discount, get_shipping_voucher_discount,
     get_value_voucher_discount, increase_voucher_usage)
 from saleor.product.models import Product, ProductVariant
 
@@ -192,7 +192,7 @@ def test_get_shipping_voucher_discount(
         ([5, 10, 15], DiscountValueType.FIXED, 2, VoucherType.PRODUCT, 6),
         ([5, 10, 15], DiscountValueType.FIXED, 2, VoucherType.PRODUCT, 2),
         ([5, 10, 15], DiscountValueType.FIXED, 2, VoucherType.CATEGORY, 2)])
-def test_get_product_or_category_voucher_discount_all_products(
+def test_get_voucher_discount_all_products(
         prices, discount_value_type, discount_value, voucher_type,
         expected_value):
     prices = [
@@ -203,5 +203,5 @@ def test_get_product_or_category_voucher_discount_all_products(
         discount_value_type=discount_value_type,
         discount_value=discount_value)
 
-    discount = get_product_or_category_voucher_discount(voucher, prices)
+    discount = get_products_voucher_discount(voucher, prices)
     assert discount == Money(expected_value, 'USD')

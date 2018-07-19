@@ -56,7 +56,6 @@ class Voucher(models.Model):
         currency=settings.DEFAULT_CURRENCY, max_digits=12,
         decimal_places=settings.DEFAULT_DECIMAL_PLACES, null=True, blank=True)
     products = models.ManyToManyField('product.Product', blank=True)
-    categories = models.ManyToManyField('product.Category', blank=True)
     collections = models.ManyToManyField('product.Collection', blank=True)
 
     objects = VoucherQueryset.as_manager()
@@ -73,10 +72,13 @@ class Voucher(models.Model):
                 'Voucher type',
                 '%(discount)s off shipping') % {'discount': discount}
         if self.type == VoucherType.PRODUCT:
+            import pdb; pdb.set_trace()
             return pgettext(
                 'Voucher type',
-                '%(discount)s off %(product)s') % {
-                    'discount': discount, 'products': self.product}
+                '%(discount)s off %(product_num)d products') % {
+                    'discount': discount,
+                    'product_num': len(self.products.all())}
+        # TODO its collections now
         if self.type == VoucherType.CATEGORY:
             return pgettext(
                 'Voucher type',
