@@ -90,7 +90,7 @@ def sale_delete(request, pk):
 @staff_member_required
 @permission_required('discount.manage_discounts')
 def voucher_list(request):
-    vouchers = (Voucher.objects.select_related('product', 'category')
+    vouchers = (Voucher.objects.select_related('products', 'categories')
                 .order_by('name'))
     voucher_filter = VoucherFilter(request.GET, queryset=vouchers)
     vouchers = get_paginator_items(

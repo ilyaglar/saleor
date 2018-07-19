@@ -538,14 +538,14 @@ def test_get_discount_for_cart_value_voucher_not_applicable(settings):
 
 @pytest.mark.parametrize(
     'shipping_cost, shipping_country_code, discount_value, discount_type,'
-    'apply_to, expected_value', [
-        (10, None, 50, DiscountValueType.PERCENTAGE, None, 5),
-        (10, None, 20, DiscountValueType.FIXED, None, 10),
-        (10, 'PL', 20, DiscountValueType.FIXED, '', 10),
-        (5, 'PL', 5, DiscountValueType.FIXED, 'PL', 5)])
+    'countries, expected_value', [
+        (10, None, 50, DiscountValueType.PERCENTAGE, [], 5),
+        (10, None, 20, DiscountValueType.FIXED, [], 10),
+        (10, 'PL', 20, DiscountValueType.FIXED, [], 10),
+        (5, 'PL', 5, DiscountValueType.FIXED, ['PL'], 5)])
 def test_get_discount_for_cart_shipping_voucher(
         settings, shipping_cost, shipping_country_code, discount_value,
-        discount_type, apply_to, expected_value):
+        discount_type, countries, expected_value):
     subtotal = TaxedMoney(net=Money(100, 'USD'), gross=Money(100, 'USD'))
     shipping_total = TaxedMoney(
         net=Money(shipping_cost, 'USD'), gross=Money(shipping_cost, 'USD'))
@@ -560,7 +560,7 @@ def test_get_discount_for_cart_shipping_voucher(
         code='unique', type=VoucherType.SHIPPING,
         discount_value_type=discount_type,
         discount_value=discount_value,
-        apply_to=apply_to,
+        countries=countries,
         limit=None)
     discount = get_voucher_discount_for_cart(voucher, cart)
     assert discount == Money(expected_value, 'USD')
@@ -568,22 +568,22 @@ def test_get_discount_for_cart_shipping_voucher(
 
 @pytest.mark.parametrize(
     'is_shipping_required, shipping_method, discount_value, discount_type,'
-    'apply_to, limit, subtotal, error_msg', [
+    'countries, limit, subtotal, error_msg', [
         (True, Mock(country_code='PL'), 10, DiscountValueType.FIXED,
-         'US', None, Money(10, 'USD'),
+         ['US'], None, Money(10, 'USD'),
          'This offer is only valid in United States of America.'),
         (True, None, 10, DiscountValueType.FIXED,
-         None, None, Money(10, 'USD'),
+         [], None, Money(10, 'USD'),
          'Please select a shipping method first.'),
         (False, None, 10, DiscountValueType.FIXED,
-         None, None, Money(10, 'USD'),
+         [], None, Money(10, 'USD'),
          'Your order does not require shipping.'),
         (True, Mock(price=Money(10, 'USD')), 10,
-         DiscountValueType.FIXED, None, 5, Money(2, 'USD'),
+         DiscountValueType.FIXED, [], 5, Money(2, 'USD'),
          'This offer is only valid for orders over $5.00.')])
 def test_get_discount_for_cart_shipping_voucher_not_applicable(
         settings, is_shipping_required, shipping_method, discount_value,
-        discount_type, apply_to, limit, subtotal, error_msg):
+        discount_type, countries, limit, subtotal, error_msg):
     subtotal_price = TaxedMoney(net=subtotal, gross=subtotal)
     cart = Mock(
         get_subtotal=Mock(return_value=subtotal_price),
@@ -594,7 +594,7 @@ def test_get_discount_for_cart_shipping_voucher_not_applicable(
         discount_value_type=discount_type,
         discount_value=discount_value,
         limit=Money(limit, 'USD') if limit is not None else None,
-        apply_to=apply_to)
+        countries=countries)
     with pytest.raises(NotApplicable) as e:
         get_voucher_discount_for_cart(voucher, cart)
     assert str(e.value) == error_msg

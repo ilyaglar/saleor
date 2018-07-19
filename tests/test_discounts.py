@@ -6,7 +6,7 @@ from prices import Money, TaxedMoney
 
 from saleor.checkout.utils import get_voucher_discount_for_cart
 from saleor.discount import (
-    DiscountValueType, VoucherApplyToProduct, VoucherType)
+    DiscountValueType, VoucherType)
 from saleor.discount.models import NotApplicable, Sale, Voucher
 from saleor.discount.utils import (
     decrease_voucher_usage, get_product_discount_on_sale,
@@ -67,34 +67,27 @@ def test_voucher_queryset_active(voucher):
 
 
 @pytest.mark.parametrize(
-    'prices, discount_value, discount_type, apply_to, expected_value', [
+    'prices, discount_value, discount_type, expected_value', [
         (
-            [10], 10, DiscountValueType.FIXED,
-            VoucherApplyToProduct.ONE_PRODUCT, 10),
+            [10], 10, DiscountValueType.FIXED, 10),
         (
-            [5], 10, DiscountValueType.FIXED,
-            VoucherApplyToProduct.ONE_PRODUCT, 5),
+            [5], 10, DiscountValueType.FIXED, 5),
         (
-            [5, 5], 10, DiscountValueType.FIXED,
-            VoucherApplyToProduct.ONE_PRODUCT, 10),
+            [5, 5], 10, DiscountValueType.FIXED, 10),
         (
-            [2, 3], 10, DiscountValueType.FIXED,
-            VoucherApplyToProduct.ONE_PRODUCT, 5),
+            [2, 3], 10, DiscountValueType.FIXED, 5),
 
         (
-            [10, 10], 5, DiscountValueType.FIXED,
-            VoucherApplyToProduct.ALL_PRODUCTS, 10),
+            [10, 10], 5, DiscountValueType.FIXED, 10),
         (
-            [5, 2], 5, DiscountValueType.FIXED,
-            VoucherApplyToProduct.ALL_PRODUCTS, 7),
+            [5, 2], 5, DiscountValueType.FIXED, 7),
         (
-            [10, 10, 10], 5, DiscountValueType.FIXED,
-            VoucherApplyToProduct.ALL_PRODUCTS, 15),
+            [10, 10, 10], 5, DiscountValueType.FIXED, 15),
 
-        ([10], 10, DiscountValueType.PERCENTAGE, None, 1),
-        ([10, 10], 10, DiscountValueType.PERCENTAGE, None, 2)])
+        ([10], 10, DiscountValueType.PERCENTAGE, 1),
+        ([10, 10], 10, DiscountValueType.PERCENTAGE, 2)])
 def test_products_voucher_checkout_discount_not(
-        settings, monkeypatch, prices, discount_value, discount_type, apply_to,
+        settings, monkeypatch, prices, discount_value, discount_type,
         expected_value):
     monkeypatch.setattr(
         'saleor.checkout.utils.get_product_variants_and_prices',
@@ -105,8 +98,7 @@ def test_products_voucher_checkout_discount_not(
     voucher = Voucher(
         code='unique', type=VoucherType.PRODUCT,
         discount_value_type=discount_type,
-        discount_value=discount_value,
-        apply_to=apply_to)
+        discount_value=discount_value)
     checkout = Mock(cart=Mock())
     discount = get_voucher_discount_for_cart(voucher, checkout)
     assert discount == Money(expected_value, 'USD')
@@ -195,23 +187,19 @@ def test_get_shipping_voucher_discount(
 
 
 @pytest.mark.parametrize(
-    'prices, discount_value_type, discount_value, voucher_type, apply_to, expected_value', [  # noqa
-        ([5, 10, 15], DiscountValueType.PERCENTAGE, 10, VoucherType.PRODUCT,
-         VoucherApplyToProduct.ALL_PRODUCTS, 3),
-        ([5, 10, 15], DiscountValueType.FIXED, 2, VoucherType.PRODUCT,
-         VoucherApplyToProduct.ALL_PRODUCTS, 6),
-        ([5, 10, 15], DiscountValueType.FIXED, 2, VoucherType.PRODUCT,
-         VoucherApplyToProduct.ONE_PRODUCT, 2),
-        ([5, 10, 15], DiscountValueType.FIXED, 2, VoucherType.CATEGORY,
-         None, 2)])
+    'prices, discount_value_type, discount_value, voucher_type, expected_value', [  # noqa
+        ([5, 10, 15], DiscountValueType.PERCENTAGE, 10, VoucherType.PRODUCT, 3),
+        ([5, 10, 15], DiscountValueType.FIXED, 2, VoucherType.PRODUCT, 6),
+        ([5, 10, 15], DiscountValueType.FIXED, 2, VoucherType.PRODUCT, 2),
+        ([5, 10, 15], DiscountValueType.FIXED, 2, VoucherType.CATEGORY, 2)])
 def test_get_product_or_category_voucher_discount_all_products(
-        prices, discount_value_type, discount_value, voucher_type, apply_to,
+        prices, discount_value_type, discount_value, voucher_type,
         expected_value):
     prices = [
         TaxedMoney(net=Money(price, 'USD'), gross=Money(price, 'USD'))
         for price in prices]
     voucher = Voucher(
-        code='unique', type=voucher_type, apply_to=apply_to,
+        code='unique', type=voucher_type,
         discount_value_type=discount_value_type,
         discount_value=discount_value)
 

@@ -6,9 +6,9 @@ from django.shortcuts import reverse
 from tests.utils import get_graphql_content
 
 from saleor.discount import (
-    DiscountValueType, VoucherApplyToProduct, VoucherType)
+    DiscountValueType, VoucherType)
 from saleor.graphql.discount.types import (
-    ApplyToEnum, DiscountValueTypeEnum, VoucherTypeEnum)
+    DiscountValueTypeEnum, VoucherTypeEnum)
 
 from .utils import assert_no_permission
 
@@ -56,7 +56,6 @@ def test_voucher_query(
                     startDate
                     discountValueType
                     discountValue
-                    applyTo
                 }
             }
         }
@@ -74,7 +73,6 @@ def test_voucher_query(
     assert data['startDate'] == voucher.start_date.isoformat()
     assert data['discountValueType'] == voucher.discount_value_type.upper()
     assert data['discountValue'] == voucher.discount_value
-    assert data['applyTo'] == voucher.apply_to
 
 
 def test_sale_query(
@@ -105,10 +103,10 @@ def test_create_voucher(user_api_client, admin_api_client):
     query = """
     mutation  voucherCreate(
         $type: VoucherTypeEnum, $name: String, $code: String,
-        $applyTo: ApplyToEnum, $discountValueType: DiscountValueTypeEnum,
+        $discountValueType: DiscountValueTypeEnum,
         $discountValue: Decimal, $limit: Decimal) {
             voucherCreate(input: {
-            name: $name, type: $type, code: $code, applyTo: $applyTo, 
+            name: $name, type: $type, code: $code,
             discountValueType: $discountValueType, discountValue: $discountValue,
             limit: $limit}) {
                 errors {
@@ -120,7 +118,6 @@ def test_create_voucher(user_api_client, admin_api_client):
                     limit {
                         amount
                     }
-                    applyTo
                     name
                     code
                     discountValueType
@@ -132,7 +129,6 @@ def test_create_voucher(user_api_client, admin_api_client):
         'name': 'test voucher',
         'type': VoucherTypeEnum.VALUE.name,
         'code': 'testcode123',
-        'applyTo': ApplyToEnum.ALL_PRODUCTS.name,
         'discountValueType': DiscountValueTypeEnum.FIXED.name,
         'discountValue': '10.12',
         'limit': '1.12'})
@@ -147,7 +143,6 @@ def test_create_voucher(user_api_client, admin_api_client):
     data = content['data']['voucherCreate']['voucher']
     assert data['type'] == VoucherType.VALUE.upper()
     assert data['limit']['amount'] == float('1.12')
-    assert data['applyTo'] == VoucherApplyToProduct.ALL_PRODUCTS
     assert data['name'] == 'test voucher'
     assert data['code'] == 'testcode123'
     assert data['discountValueType'] == DiscountValueType.FIXED.upper()

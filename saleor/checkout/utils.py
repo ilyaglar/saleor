@@ -74,9 +74,10 @@ def remove_unavailable_variants(cart):
             add_variant_to_cart(cart, line.variant, quantity, replace=True)
 
 
-def get_product_variants_and_prices(cart, product):
+def get_product_variants_and_prices(cart, products):
     """Get variants and unit prices from cart lines matching the product."""
-    lines = (line for line in cart if line.variant.product_id == product.id)
+    #FIXME make it work with several products
+    lines = (line for line in cart if line.variant.product_id == products[0].id)
     for line in lines:
         for dummy_i in range(line.quantity):
             yield line.variant, line.variant.get_price()
@@ -88,6 +89,8 @@ def get_category_variants_and_prices(cart, root_category):
     Product is assumed to be in the category if it belongs to any of its
     descendant subcategories.
     """
+    #FIXME Make it work with several categories
+    # root_category = root_categories [ITERABLE]
     matching_products = {
         line.variant.product for line in cart
         if line.variant.product.category.is_descendant_of(
@@ -628,13 +631,14 @@ def _get_shipping_voucher_discount_for_cart(voucher, cart):
             'Please select a shipping method first.')
         raise NotApplicable(msg)
     not_valid_for_country = (
-        voucher.apply_to and shipping_method.country_code != voucher.apply_to)
+        voucher.countries and
+        shipping_method.country_code in voucher.countries)
     if not_valid_for_country:
         msg = pgettext(
             'Voucher not applicable',
-            'This offer is only valid in %(country)s.')
+            'This offer is not valid in %(country)s.')
         raise NotApplicable(
-            msg % {'country': voucher.get_apply_to_display()})
+            msg % {'country': shipping_method.country_code})
     return get_shipping_voucher_discount(
         voucher, cart.get_subtotal(), shipping_method.get_total_price())
 
@@ -644,11 +648,11 @@ def _get_product_or_category_voucher_discount_for_cart(voucher, cart):
     if voucher.type == VoucherType.PRODUCT:
         prices = [
             variant_price for _, variant_price in
-            get_product_variants_and_prices(cart, voucher.product)]
+            get_product_variants_and_prices(cart, voucher.products.all())]
     else:
         prices = [
             variant_price for _, variant_price in
-            get_category_variants_and_prices(cart, voucher.category)]
+            get_category_variants_and_prices(cart, voucher.categories.all())]
     if not prices:
         msg = pgettext(
             'Voucher not applicable',
