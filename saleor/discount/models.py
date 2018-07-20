@@ -112,8 +112,8 @@ class Voucher(models.Model):
         return gross_price - gross_after_discount
 
     def validate_min_amount_spent(self, value):
-        min_amount_spent = self.min_amount_spent or value.gross
-        if value.gross < min_amount_spent:
+        min_amount_spent = self.min_amount_spent
+        if min_amount_spent and value.gross < min_amount_spent:
             msg = pgettext(
                 'Voucher not applicable',
                 'This offer is only valid for orders over %(amount)s.')
