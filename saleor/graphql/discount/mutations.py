@@ -12,7 +12,7 @@ def validate_voucher(voucher_data):
     if voucher_type == VoucherType.PRODUCT:
         if not voucher_data.get('products'):
             errors.append(('products', 'This field is required.'))
-    elif voucher_type == VoucherType.CATEGORY:
+    elif voucher_type == VoucherType.COLLECTION:
         if not voucher_data.get('collections'):
             errors.append(('collections', 'This field is required.'))
     return errors

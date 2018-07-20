@@ -621,7 +621,7 @@ def test_get_discount_for_cart_category_voucher_not_applicable(monkeypatch):
         'saleor.checkout.utils.get_prices_of_products_in_discounted_collections',  # noqa
         lambda cart, product: [])
     voucher = Voucher(
-        code='unique', type=VoucherType.CATEGORY,
+        code='unique', type=VoucherType.COLLECTION,
         discount_value_type=DiscountValueType.FIXED,
         discount_value=10)
     voucher.save()

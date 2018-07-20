@@ -79,7 +79,7 @@ class Voucher(models.Model):
                     'discount': discount,
                     'product_num': len(self.products.all())}
         # TODO its collections now
-        if self.type == VoucherType.CATEGORY:
+        if self.type == VoucherType.COLLECTION:
             return pgettext(
                 'Voucher type',
                 '%(discount)s off %(collections_num)d collections') % {

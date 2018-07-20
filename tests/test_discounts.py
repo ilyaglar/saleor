@@ -195,7 +195,7 @@ def test_get_shipping_voucher_discount(
     'prices, discount_value_type, discount_value, voucher_type, ''expected_value', [  # noqa
         ([5, 10, 15], DiscountValueType.PERCENTAGE, 10, VoucherType.PRODUCT, 3),
         ([5, 10, 15], DiscountValueType.FIXED, 2, VoucherType.PRODUCT, 2),
-        ([5, 10, 15], DiscountValueType.FIXED, 2, VoucherType.CATEGORY, 2)])
+        ([5, 10, 15], DiscountValueType.FIXED, 2, VoucherType.COLLECTION, 2)])
 def test_get_voucher_discount_all_products(
         prices, discount_value_type, discount_value, voucher_type,
         expected_value):
