@@ -78,14 +78,14 @@ def get_prices_of_discounted_products(lines, discounted_products):
     """Get variants and unit prices from cart lines matching the product."""
     # If there's no discounted_products,
     # it means that all products are discounted
-    if not discounted_products:
-        return [line.get_total() for line in lines]
+    if discounted_products:
+        lines = (
+            line for line in lines
+            if line.variant.product in discounted_products)
 
-    prices = [
-        line.get_total()
-        for line in lines
-        if line.variant.product in discounted_products]
-    return prices
+    for line in lines:
+        for item in line.quantity:
+            yield item.get_price()
 
 
 def get_prices_of_products_in_discounted_collections(
@@ -97,15 +97,16 @@ def get_prices_of_products_in_discounted_collections(
     """
     # If there's no discounted collections,
     # it means that all of them are discounted
-    if not discounted_collections:
-        return [line.get_total() for line in lines]
+    if discounted_collections:
+        discounted_collections = set(discounted_collections)
+        lines = (
+            line for line in lines
+            if line.variant and
+            line.variant.product.collections.all() & discounted_collections)
 
-    discounted_collections = set(discounted_collections)
-    prices = [
-        line.get_total() for line in lines
-        if line.variant and
-        set(line.variant.product.collections.all()) & discounted_collections]
-    return prices
+    for line in lines:
+        for item in line.quantity:
+            yield item.get_price()
 
 
 def check_product_availability_and_warn(request, cart):

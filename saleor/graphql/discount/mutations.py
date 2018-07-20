@@ -102,6 +102,10 @@ class SaleInput(graphene.InputObjectType):
         graphene.ID, description='Categories related to the discount.')
     collections = graphene.List(
         graphene.ID, description='Collections related to the discount.')
+    start_date = graphene.types.datetime.DateTime(
+        description='Start date of the sale in ISO 8601 format.')
+    end_date = graphene.types.datetime.DateTime(
+        description='End date of the sale in ISO 8601 format.')
 
 
 class SaleCreate(ModelMutation):

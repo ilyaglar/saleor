@@ -1,3 +1,5 @@
+from datetime import date
+
 from ...discount import models
 from ..utils import filter_by_query_param
 

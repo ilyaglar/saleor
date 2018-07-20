@@ -32,6 +32,12 @@ class SaleForm(forms.ModelForm):
             'type': pgettext_lazy(
                 'Discount type',
                 'Fixed or percentage'),
+            'start_date': pgettext_lazy(
+                'Sale date restrictions',
+                'Start date'),
+            'end_date': pgettext_lazy(
+                'Sale date restrictions',
+                'End date'),
             'value': pgettext_lazy(
                 'Percentage or fixed amount value',
                 'Value'),
@@ -129,13 +135,13 @@ class ShippingVoucherForm(forms.ModelForm):
         currency=settings.DEFAULT_CURRENCY,
         label=pgettext_lazy(
             'Lowest value for order to be able to use the voucher',
-            'Only if order is over or equal to'))
-    countries = forms.ChoiceField(
+            'Apply only if the purchase value is greater than or equal to'))
+    countries = forms.MultipleChoiceField(
         choices=country_choices,
         required=False,
         label=pgettext_lazy(
             'Text above the dropdown of countries',
-            'Countries that free shipping should apply to'))
+            'Limit countries that voucher should apply to'))
 
     class Meta:
         model = Voucher
@@ -152,7 +158,7 @@ class ValueVoucherForm(forms.ModelForm):
         currency=settings.DEFAULT_CURRENCY,
         label=pgettext_lazy(
             'Lowest value for order to be able to use the voucher',
-            'Only apply if purchase value is greater than or equal to'))
+            'Apply only if the purchase value is greater than or equal to'))
 
     class Meta:
         model = Voucher
@@ -169,8 +175,15 @@ class CommonVoucherForm(forms.ModelForm):
 
     use_required_attribute = False
 
+
     def save(self, commit=True):
-        self.instance.min_amount_spent = None
+        self.instance.limit = None
+        # Apply to one with percentage discount is more complicated case.
+        # On which product we should apply it? On first, last or cheapest?
+        # Percentage case is limited to the all value and the apply_to field
+        # is not used in this case so we set it to None.
+        if self.instance.discount_value_type == DiscountValueType.PERCENTAGE:
+            self.instance.apply_to_every_product = False
         return super().save(commit)
 
 
@@ -193,8 +206,7 @@ class CollectionVoucherForm(CommonVoucherForm):
         fields = ['collections']
         labels = {
             'collections': pgettext_lazy(
-                'Collections',
-                'Collections')}
+                'Collections', 'Collections')}
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

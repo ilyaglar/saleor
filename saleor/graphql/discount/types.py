@@ -29,7 +29,9 @@ class Sale(CountableDjangoObjectType):
         filter_fields = {
             'name': ['icontains'],
             'type': ['icontains'],
-            'value': ['gte', 'lte']}
+            'value': ['gte', 'lte'],
+            'start_date': ['exact'],
+            'end_date': ['exact']}
         model = models.Sale
 
 

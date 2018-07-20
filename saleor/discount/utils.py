@@ -1,7 +1,7 @@
 from django.db.models import F
 from django.utils.translation import pgettext
 
-from ..core.utils.taxes import ZERO_TAXED_MONEY
+from ..core.utils.taxes import ZERO_TAXED_MONEY, ZERO_MONEY
 from .models import NotApplicable
 
 
@@ -78,5 +78,10 @@ def get_shipping_voucher_discount(voucher, total_price, shipping_price):
 
 def get_products_voucher_discount(voucher, prices):
     """Calculate discount value for a voucher of product or category type."""
+    if voucher.apply_to_every_product:
+        discounts = (
+            voucher.get_discount_amount_for(price) for price in prices)
+        total_amount = sum(discounts, ZERO_MONEY)
+        return total_amount
     product_total = sum(prices, ZERO_TAXED_MONEY)
     return voucher.get_discount_amount_for(product_total)
