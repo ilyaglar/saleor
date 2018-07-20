@@ -72,7 +72,6 @@ class Voucher(models.Model):
                 'Voucher type',
                 '%(discount)s off shipping') % {'discount': discount}
         if self.type == VoucherType.PRODUCT:
-            import pdb; pdb.set_trace()
             return pgettext(
                 'Voucher type',
                 '%(discount)s off %(product_num)d products') % {
@@ -82,8 +81,9 @@ class Voucher(models.Model):
         if self.type == VoucherType.CATEGORY:
             return pgettext(
                 'Voucher type',
-                '%(discount)s off %(category)s') % {
-                    'discount': discount, 'categories': self.category}
+                '%(discount)s off %(collections_num)d collections') % {
+                    'discount': discount,
+                    'collections_num': len(self.collections.all())}
         return pgettext(
             'Voucher type', '%(discount)s off') % {'discount': discount}
 

@@ -142,8 +142,6 @@ class ShippingVoucherForm(forms.ModelForm):
         fields = ['countries', 'limit']
 
     def save(self, commit=True):
-        self.instance.products = None
-        self.instance.collections = None
         return super().save(commit)
 
 

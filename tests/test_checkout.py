@@ -508,7 +508,7 @@ def test_note_in_created_order_empty_note(request_cart_with_item, address):
         ('100', 10, DiscountValueType.FIXED, None, 10),
         ('100.05', 10, DiscountValueType.PERCENTAGE, 100, 10)])
 def test_get_discount_for_cart_value_voucher(
-        settings, total, discount_value, discount_type, limit,
+        total, discount_value, discount_type, limit,
         discount_amount):
     voucher = Voucher(
         code='unique',
@@ -522,7 +522,7 @@ def test_get_discount_for_cart_value_voucher(
     assert discount == Money(discount_amount, 'USD')
 
 
-def test_get_discount_for_cart_value_voucher_not_applicable(settings):
+def test_get_discount_for_cart_value_voucher_not_applicable():
     voucher = Voucher(
         code='unique',
         type=VoucherType.VALUE,
@@ -544,7 +544,7 @@ def test_get_discount_for_cart_value_voucher_not_applicable(settings):
         (10, 'PL', 20, DiscountValueType.FIXED, [], 10),
         (5, 'PL', 5, DiscountValueType.FIXED, ['PL'], 5)])
 def test_get_discount_for_cart_shipping_voucher(
-        settings, shipping_cost, shipping_country_code, discount_value,
+        shipping_cost, shipping_country_code, discount_value,
         discount_type, countries, expected_value):
     subtotal = TaxedMoney(net=Money(100, 'USD'), gross=Money(100, 'USD'))
     shipping_total = TaxedMoney(
@@ -571,7 +571,7 @@ def test_get_discount_for_cart_shipping_voucher(
     'countries, limit, subtotal, error_msg', [
         (True, Mock(country_code='PL'), 10, DiscountValueType.FIXED,
          ['US'], None, Money(10, 'USD'),
-         'This offer is only valid in United States of America.'),
+         'This offer is not valid in your country.'),
         (True, None, 10, DiscountValueType.FIXED,
          [], None, Money(10, 'USD'),
          'Please select a shipping method first.'),
@@ -582,7 +582,7 @@ def test_get_discount_for_cart_shipping_voucher(
          DiscountValueType.FIXED, [], 5, Money(2, 'USD'),
          'This offer is only valid for orders over $5.00.')])
 def test_get_discount_for_cart_shipping_voucher_not_applicable(
-        settings, is_shipping_required, shipping_method, discount_value,
+        is_shipping_required, shipping_method, discount_value,
         discount_type, countries, limit, subtotal, error_msg):
     subtotal_price = TaxedMoney(net=subtotal, gross=subtotal)
     cart = Mock(
@@ -600,15 +600,15 @@ def test_get_discount_for_cart_shipping_voucher_not_applicable(
     assert str(e.value) == error_msg
 
 
-def test_get_discount_for_cart_product_voucher_not_applicable(
-        settings, monkeypatch):
+def test_get_discount_for_cart_product_voucher_not_applicable(monkeypatch):
     monkeypatch.setattr(
-        'saleor.checkout.utils.get_product_variants_and_prices',
+        'saleor.checkout.utils.get_prices_of_discounted_products',
         lambda cart, product: [])
     voucher = Voucher(
         code='unique', type=VoucherType.PRODUCT,
         discount_value_type=DiscountValueType.FIXED,
         discount_value=10)
+    voucher.save()
     cart = Mock()
 
     with pytest.raises(NotApplicable) as e:
@@ -616,15 +616,15 @@ def test_get_discount_for_cart_product_voucher_not_applicable(
     assert str(e.value) == 'This offer is only valid for selected items.'
 
 
-def test_get_discount_for_cart_category_voucher_not_applicable(
-        settings, monkeypatch):
+def test_get_discount_for_cart_category_voucher_not_applicable(monkeypatch):
     monkeypatch.setattr(
-        'saleor.checkout.utils.get_category_variants_and_prices',
+        'saleor.checkout.utils.get_prices_of_products_in_discounted_collections',  # noqa
         lambda cart, product: [])
     voucher = Voucher(
         code='unique', type=VoucherType.CATEGORY,
         discount_value_type=DiscountValueType.FIXED,
         discount_value=10)
+    voucher.save()
     cart = Mock()
 
     with pytest.raises(NotApplicable) as e:

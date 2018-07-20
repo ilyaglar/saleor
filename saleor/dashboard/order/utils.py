@@ -3,6 +3,9 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import get_template
 
 from ...checkout import AddressType
+from ...checkout.utils import (
+    _get_products_voucher_discount, get_prices_of_discounted_products,
+    get_prices_of_products_in_discounted_collections)
 from ...core.utils.taxes import ZERO_MONEY
 from ...discount import VoucherType
 from ...discount.models import NotApplicable
@@ -74,71 +77,21 @@ def update_order_with_user_addresses(order):
     order.save(update_fields=['billing_address', 'shipping_address'])
 
 
-def get_prices_of_discounted_products(order):
-    """Get variants and unit prices from order lines matching the product."""
-    discounted_products = order.voucher.products.all()
-    prices = [
-        line.get_total() for line in order
-        if line.variant and line.variant.product in discounted_products]
-    return prices
-
-
-def get_prices_of_products_in_discounted_collections(order):
-    """Get variants and unit prices from cart lines included in
-    the collections.
-    """
-    discounted_collections = set(order.voucher.collections.all())
-    prices = [
-        line.get_total() for line in order
-        if line.variant and
-        set(line.variant.product.collections.all()) & discounted_collections]
-    return prices
-
-
-def _get_value_voucher_discount_for_order(order):
-    """Calculate discount value for a voucher of value type."""
-    try:
-        discount_amount = get_value_voucher_discount(
-            order.voucher, order.get_subtotal())
-    except NotApplicable:
-        discount_amount = ZERO_MONEY
-    return discount_amount
-
-
-def _get_shipping_voucher_discount_for_order(order):
-    """Calculate discount value for a voucher of shipping type."""
-    try:
-        discount_amount = get_shipping_voucher_discount(
-            order.voucher, order.get_subtotal(), order.shipping_price)
-    except NotApplicable:
-        discount_amount = ZERO_MONEY
-    return discount_amount
-
-
-def _get_products_voucher_discount_for_order(order):
-    """Calculate discount value for a voucher of product or category type."""
-    if order.voucher.type == VoucherType.PRODUCT:
-        prices = get_prices_of_discounted_products(order)
-    else:
-        prices = get_prices_of_products_in_discounted_collections(order)
-    if not prices:
-        return ZERO_MONEY
-    return get_products_voucher_discount(order.voucher, prices)
-
-
 def get_voucher_discount_for_order(order):
     """Calculate discount value depending on voucher and discount types.
 
     Raise NotApplicable if voucher of given type cannot be applied.
     """
     if not order.voucher:
-        return None
+        return ZERO_MONEY
     if order.voucher.type == VoucherType.VALUE:
-        return _get_value_voucher_discount_for_order(order)
+        return get_value_voucher_discount(
+            order.voucher, order.get_subtotal())
     if order.voucher.type == VoucherType.SHIPPING:
-        return _get_shipping_voucher_discount_for_order(order)
+        return get_shipping_voucher_discount(
+            order.voucher, order.get_subtotal(), order.shipping_price)
     if order.voucher.type in (VoucherType.PRODUCT, VoucherType.CATEGORY):
-        return _get_products_voucher_discount_for_order(order)
+        return _get_products_voucher_discount(order, order.voucher)
     raise NotImplementedError('Unknown discount type')
 
 
@@ -158,6 +111,10 @@ def save_address_in_order(order, address, address_type):
     order.save(update_fields=['billing_address', 'shipping_address'])
 
 
+def addresses_are_equal(address_1, address_2):
+    return address_1 and address_2 and address_1 == address_2
+
+
 def remove_customer_from_order(order):
     """Remove related customer and user email from order.
 
@@ -170,16 +127,14 @@ def remove_customer_from_order(order):
     order.save()
 
     if customer:
-        equal_billing_addresses = (
-            order.billing_address and customer.default_billing_address and
-            customer.default_billing_address == order.billing_address)
+        equal_billing_addresses = addresses_are_equal(
+            order.billing_address, customer.default_billing_address)
         if equal_billing_addresses:
             order.billing_address.delete()
             order.billing_address = None
 
-        equal_shipping_addresses = (
-            order.shipping_address and customer.default_shipping_address and
-            customer.default_shipping_address == order.shipping_address)
+        equal_shipping_addresses = addresses_are_equal(
+            order.shipping_address, customer.default_shipping_address)
         if equal_shipping_addresses:
             order.shipping_address.delete()
             order.shipping_address = None
