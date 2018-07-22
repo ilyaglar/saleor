@@ -44,7 +44,9 @@ class Voucher(models.Model):
     used = models.PositiveIntegerField(default=0, editable=False)
     start_date = models.DateField(default=date.today)
     end_date = models.DateField(null=True, blank=True)
-    apply_to_every_product = models.BooleanField(default=False)
+    # this field indicates if discount should be applied per order or
+    # individually to every item
+    apply_once_per_order = models.BooleanField(default=False)
     discount_value_type = models.CharField(
         max_length=10, choices=DiscountValueType.CHOICES,
         default=DiscountValueType.FIXED)
@@ -58,6 +60,7 @@ class Voucher(models.Model):
         decimal_places=settings.DEFAULT_DECIMAL_PLACES, null=True, blank=True)
     products = models.ManyToManyField('product.Product', blank=True)
     collections = models.ManyToManyField('product.Collection', blank=True)
+    categories = models.ManyToManyField('product.Category', blank=True)
 
     objects = VoucherQueryset.as_manager()
 
@@ -73,17 +76,29 @@ class Voucher(models.Model):
                 'Voucher type',
                 '%(discount)s off shipping') % {'discount': discount}
         if self.type == VoucherType.PRODUCT:
-            return pgettext(
-                'Voucher type',
-                '%(discount)s off %(product_num)d products') % {
-                    'discount': discount,
-                    'product_num': len(self.products.all())}
+            products = len(self.products.all())
+            if products:
+                return pgettext(
+                    'Voucher type',
+                    '%(discount)s off %(product_num)d products') % {
+                        'discount': discount,
+                        'product_num': products}
         if self.type == VoucherType.COLLECTION:
-            return pgettext(
-                'Voucher type',
-                '%(discount)s off %(collections_num)d collections') % {
-                    'discount': discount,
-                    'collections_num': len(self.collections.all())}
+            collections = len(self.collections.all())
+            if collections:
+                return pgettext(
+                    'Voucher type',
+                    '%(discount)s off %(collections_num)d collections') % {
+                        'discount': discount,
+                        'collections_num': collections}
+        if self.type == VoucherType.CATEGORY:
+            categories = len(self.categories.all())
+            if categories:
+                return pgettext(
+                    'Voucher type',
+                    '%(discount)s off %(categories_num)d categories') % {
+                        'discount': discount,
+                        'categories_num': categories}
         return pgettext(
             'Voucher type', '%(discount)s off') % {'discount': discount}
 

@@ -38,6 +38,7 @@ class Sale(CountableDjangoObjectType):
 class VoucherTypeEnum(graphene.Enum):
     PRODUCT = VoucherType.PRODUCT
     COLLECTION = VoucherType.COLLECTION
+    CATEGORY = VoucherType.CATEGORY
     SHIPPING = VoucherType.SHIPPING
     VALUE = VoucherType.VALUE
 

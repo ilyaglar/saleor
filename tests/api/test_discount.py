@@ -325,32 +325,19 @@ def test_sale_delete_mutation(user_api_client, admin_api_client, sale):
 def test_validate_voucher(voucher, admin_api_client, product):
     query = """
     mutation  voucherUpdate(
-        $products: [ProductInput], $id: ID!, $type: VoucherTypeEnum) {
+        $id: ID!, $type: VoucherTypeEnum) {
             voucherUpdate(
-            id: $id, input: {products: $products, type: $type}) {
+            id: $id, input: {type: $type}) {
                 errors {
                     field
                     message
                 }
-                voucher {
-                    products {
-                        edges {
-                            node {
-                                name
-                            }
-                        }
-                    }
-                }
             }
         }
     """
-
-    assert not voucher.products.all()
-    product_id = graphene.Node.to_global_id('Product', product.id)
     variables = json.dumps({
         'type': VoucherTypeEnum.PRODUCT.name,
-        'id': graphene.Node.to_global_id('Voucher', voucher.id),
-        'products': [{'name': 1, 'productID': product_id}]})
+        'id': graphene.Node.to_global_id('Voucher', voucher.id)})
     response = admin_api_client.post(
         reverse('api'), {'query': query, 'variables': variables})
     content = get_graphql_content(response)

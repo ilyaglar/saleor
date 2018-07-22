@@ -15,6 +15,9 @@ def validate_voucher(voucher_data):
     elif voucher_type == VoucherType.COLLECTION:
         if not voucher_data.get('collections'):
             errors.append(('collections', 'This field is required.'))
+    elif voucher_type == VoucherType.CATEGORY:
+        if not voucher_data.get('categories'):
+            errors.append(('categories', 'This field is required.'))
     return errors
 
 
@@ -34,6 +37,8 @@ class VoucherInput(graphene.InputObjectType):
         graphene.ID, description='Products discounted by the voucher.')
     collections = graphene.List(
         graphene.ID, description='Collections discounted by the voucher.')
+    categories = graphene.List(
+        graphene.ID, description='Categories discounted by the voucher.')
     min_amount_spent = Decimal(
         description='Min purchase amount required to apply the voucher.')
     countries = graphene.List(
