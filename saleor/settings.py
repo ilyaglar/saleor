@@ -51,36 +51,37 @@ CACHES = {'default': django_cache_url.config()}
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgres://saleor:saleor@localhost:5432/saleor',
+        default='postgres://saleor:saleor@localhost:5432/akvamag',
         conn_max_age=600)}
 
 
-TIME_ZONE = 'America/Chicago'
-LANGUAGE_CODE = 'en'
+TIME_ZONE = 'Europe/Moscow'
+LANGUAGE_CODE = 'ru'
 LANGUAGES = [
-    ('bg', _('Bulgarian')),
-    ('cs', _('Czech')),
-    ('de', _('German')),
-    ('en', _('English')),
-    ('es', _('Spanish')),
-    ('fa-ir', _('Persian (Iran)')),
-    ('fr', _('French')),
-    ('hu', _('Hungarian')),
-    ('it', _('Italian')),
-    ('ja', _('Japanese')),
-    ('ko', _('Korean')),
-    ('nb', _('Norwegian')),
-    ('nl', _('Dutch')),
-    ('pl', _('Polish')),
-    ('pt-br', _('Portuguese (Brazil)')),
-    ('ro', _('Romanian')),
+    # ('bg', _('Bulgarian')),
+    # ('cs', _('Czech')),
+    # ('de', _('German')),
+    # ('en', _('English')),
+    # ('es', _('Spanish')),
+    # ('fa-ir', _('Persian (Iran)')),
+    # ('fr', _('French')),
+    # ('hu', _('Hungarian')),
+    # ('it', _('Italian')),
+    # ('ja', _('Japanese')),
+    # ('ko', _('Korean')),
+    # ('nb', _('Norwegian')),
+    # ('nl', _('Dutch')),
+    # ('pl', _('Polish')),
+    # ('pt-br', _('Portuguese (Brazil)')),
+    # ('ro', _('Romanian')),
     ('ru', _('Russian')),
-    ('sk', _('Slovak')),
-    ('tr', _('Turkish')),
-    ('uk', _('Ukrainian')),
-    ('vi', _('Vietnamese')),
-    ('zh-hans', _('Chinese')),
-    ('zh-tw', _('Chinese (Taiwan)'))]
+    # ('sk', _('Slovak')),
+    # ('tr', _('Turkish')),
+    # ('uk', _('Ukrainian')),
+    # ('vi', _('Vietnamese')),
+    # ('zh-hans', _('Chinese')),
+    # ('zh-tw', _('Chinese (Taiwan)'))
+]
 LOCALE_PATHS = [os.path.join(PROJECT_ROOT, 'locale')]
 USE_I18N = True
 USE_L10N = True
@@ -307,8 +308,8 @@ AUTH_USER_MODEL = 'account.User'
 
 LOGIN_URL = '/account/login/'
 
-DEFAULT_COUNTRY = os.environ.get('DEFAULT_COUNTRY', 'US')
-DEFAULT_CURRENCY = os.environ.get('DEFAULT_CURRENCY', 'USD')
+DEFAULT_COUNTRY = os.environ.get('DEFAULT_COUNTRY', 'RU')
+DEFAULT_CURRENCY = os.environ.get('DEFAULT_CURRENCY', 'RUB')
 DEFAULT_DECIMAL_PLACES = get_currency_fraction(DEFAULT_CURRENCY)
 AVAILABLE_CURRENCIES = [DEFAULT_CURRENCY]
 COUNTRIES_OVERRIDE = {
