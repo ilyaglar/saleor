@@ -119,12 +119,16 @@ def category_index(request, path, category_id):
                         category_id=category_id)
     # Check for subcategories
     categories = category.get_descendants(include_self=True)
+
+    all_categories = Category.objects.all()
     products = products_with_details(user=request.user).filter(
         category__in=categories).order_by('name')
+
     product_filter = ProductCategoryFilter(
         request.GET, queryset=products, category=category)
     ctx = get_product_list_context(request, product_filter)
     ctx.update({'object': category})
+    ctx.update({'all_categories': all_categories})
     return TemplateResponse(request, 'category/index.html', ctx)
 
 

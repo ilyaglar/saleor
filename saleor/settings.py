@@ -163,6 +163,9 @@ TEMPLATES = [{
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = os.environ.get('SECRET_KEY')
+if DEBUG:
+    SECRET_KEY = 't$v!dfeyg3g#%hed+)8si#1z4_mx_i)sb0632%5yg-8kdb@t=*zi^'
+
 
 MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -397,12 +400,12 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
 VERSATILEIMAGEFIELD_RENDITION_KEY_SETS = {
     'products': [
-        ('product_gallery', 'crop__540x540'),
-        ('product_gallery_2x', 'crop__1080x1080'),
-        ('product_small', 'crop__60x60'),
-        ('product_small_2x', 'crop__120x120'),
-        ('product_list', 'crop__255x255'),
-        ('product_list_2x', 'crop__510x510')]}
+        ('product_gallery', 'thumbnail__540x540'),
+        ('product_gallery_2x', 'thumbnail__1080x1080'),
+        ('product_small', 'thumbnail__60x60'),
+        ('product_small_2x', 'thumbnail__120x120'),
+        ('product_list', 'thumbnail__255x255'),
+        ('product_list_2x', 'thumbnail__510x510')]}
 
 VERSATILEIMAGEFIELD_SETTINGS = {
     # Images should be pre-generated on Production environment

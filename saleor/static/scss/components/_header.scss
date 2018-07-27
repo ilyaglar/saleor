@@ -146,11 +146,14 @@
       width: auto;
     }
   }
+  a:hover {
+    text-decoration: none;
+  }
   &__login {
     p {
       font-size: 0.7rem;
       margin-bottom: 0;
-      color: $skull-gray;
+      //color: $skull-gray;
       line-height: 1.9rem;
       text-transform: uppercase;
       width: 100%;
@@ -171,17 +174,17 @@
     }
   }
   &__logo {
-    padding: $global-padding * 2 0;
+    //padding: $global-padding * 2 0;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     .menu-icon-mobile {
       position: relative;
       display: inline-block;
       top: -5px;
       span {
         position: absolute;
-        top: 1.3rem;
-        left: 1.1rem;
+        //top: 1.3rem;
+        //left: 1.1rem;
         text-transform: uppercase;
         font-size: 0.45rem;
       }
@@ -195,11 +198,29 @@
     svg path {
       fill: $body-color;
     }
+    &__catalog {
+      font-family: "Roboto Condensed";
+      font-size: 18px;
+      font-weight: 600;
+      margin: 13px 0 0 10px;
+      padding: 1px 5px;
+      background-color: $light-blue;
+      color: white;
+
+
+    }
   }
+  //&__logo__catalog {
+  //  padding: 5px;
+  //  background-color: $blue;
+  //}
   &__search {
-    padding: $global-padding * 2 0;
+    //padding: $global-padding * 2 0;
+    margin: 9px 0 0 0;
+    padding: 0;
     position: relative;
     form {
+      font-family: Roboto;
       svg {
         width: 1.5rem;
         height: 1.5rem;
@@ -212,8 +233,35 @@
       padding-right: $global-padding;
     }
   }
+
+  &__sitenav {
+    //padding: 0 30px 0 30px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+
+    div {
+      //display: inline-block;
+      margin-left: 15px;
+    }
+    .econom {
+      a {
+        color: $orange;
+      }
+    }
+
+  }
+  &__phone {
+    padding-left: 20px;
+    display: flex;
+    align-items: center;
+    font-size: 19px;
+    font-weight:600;
+    color: $blue;
+  }
+
   &__brand {
-    background-color: $light-gray;
+    //background-color: $light-gray;
     @include media-breakpoint-down(sm) {
       position: fixed;
       top: 0;
